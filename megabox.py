@@ -48,13 +48,17 @@ def megabox_crawling(date, brch, shall):
     shall_dic = {'DBC': 'Dolby Cinema', 'TB': 'The Boutique', 'MX': 'MX관',
                  'CFT': '컴포트관', 'MKB': 'MEGA KIDS', 'TFC': 'The First Class'}
     filename = 'megabox' + brch + shall + '.pickle'
+    shallname = ""
 
     try:
+        shallname = shall_dic[shall]
         with open(filename, 'rb') as f:
             sdate = pickle.load(f)
 
     except (EOFError, FileNotFoundError):
         sdate = date
+    except KeyError:
+        shallname = 'Dolby Cinema'
     logger.info('메가박스 검색 시작 날짜 : {}'.format(sdate))
     while True:
         movie_list = get_megabox_movie_list(sdate, brch, shall)
@@ -76,7 +80,7 @@ def megabox_crawling(date, brch, shall):
                         line.append("(" + str(mvlst['restSeatCnt']) + "/" + str(mvlst['totSeatCnt']) + ")")
                 movie_split_list.append(line)
 
-            sendmsg = "*메가박스 " + brch + " " + shall_dic[shall] + "*\n"
+            sendmsg = "*메가박스 " + brch + " " + shallname + "*\n"
             week = t[datetime.strptime(sdate, "%Y%m%d").weekday()]
             sendmsg += sdate + " (" + week + ") 예매 오픈\n"
             for i in range(len(movie_split_list)):
@@ -94,7 +98,7 @@ def megabox_crawling(date, brch, shall):
             with open(filename, 'wb') as f:
                 pickle.dump(sdate, f)
         except ValueError:  # 리스트가 비어있을경우(예매오픈하기 전) 30초마다 재탐색
-            time.sleep(30)
+            time.sleep(60)
 
 if __name__ == "__main__":
     latest_date = "20200727" # 프로그램을 실행시킨 시간부터 탐색
