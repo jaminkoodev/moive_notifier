@@ -6,7 +6,7 @@ from datetime import timedelta
 import telepot
 import logging
 import pickle
-
+import re
 # 메가박스
 # post방식으로 통신
 # JSON
@@ -18,7 +18,13 @@ import pickle
 #   playDe : 확인할 상영날짜
 #   crtDe : 현재날짜
 def get_megabox_movie_list(date, brch, shall):
-    brch_dic = {'코엑스':'1351', '목동':'1581', '상암':'1211'}
+    brch_dic = {'강낭':'1372', '강남대로':'1359', '강동':'1341', '군자':'1431', '동대문':'1003',
+                '마곡':'1572', '목동':'1581', '상봉':'1311', '상암월드컵경기장':'1211', '성수':'1331',
+                '센트럴':'1371', '송파파크하비오':'1381', '신촌':'1202', '은평':'1221', '이수':'1561',
+                '창동':'1321', '코엑스':'1351', '홍대':'1212', '화곡':'1571', 'ARTNINE':'1562'}
+    shall_dic = {'돌비시네마':'DBC', '더 부티크':'TB', 'MX관':'MX',
+                 '컴포트':'CFT', '메가박스 키즈':'MKB', '더 퍼스트 클럽':'TFC'}
+
     crtde = datetime.today().strftime("%Y%m%d")
 
     URL = "https://www.megabox.co.kr/on/oh/ohc/Brch/schedulePage.do"
@@ -34,6 +40,39 @@ def get_megabox_movie_list(date, brch, shall):
                   "playDe": date} # 찾고있는 날짜
     response = requests.post(URL, data=parameters).json()
     return response['megaMap']['movieFormList']
+
+
+def set_megabox_brch_reg(brch):
+    brch = brch.replace(' ', '')
+
+    if brch[-1] == "점" or brch[-1] == "관" or brch[-1] == "역" or brch[-1] == "동":
+        brch = brch[:-2]
+
+    brch = re.sub(r"(상암|상암월드컵경기장|월드컵경기장|월드컵경기장상암)", "상암월드컵경기장", brch)
+    brch = re.sub(r"(센트럴|샌트럴|센트랄|샌트랄|고터|고속터미널|고속터미널역|터미널|강남터미널)", "센트럴", brch)
+    brch = re.sub(r"(송파|문정|북정|송파파크하비오|파크하비오|송파하비오|송파하비오파크)", "송파파크하비오", brch)
+    brch = re.sub(r"(신촌|신촌아트레온|아트레온|연세|연세대|아트레온신촌|신촌기차)", "신촌", brch)
+    brch = re.sub(r"(코엑스|코엑스몰|봉은사|삼성|삼성동)", "코엑스", brch)
+    brch = re.sub(r"(홍대|홍대입구|홍익대학교)", "홍대", brch)
+    brch = re.sub(r"(ARTNINE|artnine|아트나인|아트나인이수|이수아트나인)", "ARTNINE", brch, flags=re.IGNORECASE)
+
+    return brch
+
+
+def set_megabox_shall_reg(shall):
+    shall = shall.replace(' ', '')
+
+    if shall[-1] == "점" or shall[-1] == "관":
+        shall = shall[:-2]
+
+    shall = re.sub(r"(DBC|돌비시네마|돌비|시네마|dolbycinema|dollbycinema|dolby)", "DBC", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(TB|thebotique|theboutique|boutique|botique|더부티크|부티크|더부티|부티크|부티)", "TB", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(MX|엠엑스|앰엑스|atmos|dolbyatmos)", "MX", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(CFT|컴포트|COMFORT|CF|CP|CPT)", "CFT", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(MKB|메가박스키즈|키즈|키드|어린이|메가키즈|MEGABOXKIDS|MEGABOXKID|KID|MEGAKID|MEGAKIDS|KIDS)", "MKB", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(TFC|TF|THEFIRSTCLUB|THRFIRSTCLUBS|더퍼스트클럽|더퍼스트|퍼스트클럽|퍼스트클래스|더퍼스트클래스|)", "TFC", shall, flags=re.IGNORECASE)
+
+    return shall
 
 # 현재 날짜에 상영중인 영화 제목의 고유번호를 반환함
 def get_megabox_movie_no_list(response):

@@ -16,7 +16,13 @@ import logging
 #   theatercode : 상영관 번호 용산 | 왕십리 | 대학로 | 강남 [0013 | 0074 | 0063 | 0056]
 #   date : 날짜 YYYYMMDD
 def get_cgv_movie_list(date, therater, shall):
-    theater_dic = {'용산':'0013', '왕십리':'0074', '대학로':'0063'}
+    theater_dic = {'강남':'0056', '강변':'0001', '건대입구':'0229', '구로':'0010', '대학로':'0063',
+                   '동대문':'0252', '등촌':'0230', '명동':'0009', '명동역 씨네라이브러리':'0105',
+                   '목동':'0011', '미아':'0057', '불광':'0030', '상봉':'0046', '성신여대입구':'0300',
+                   '송파':'0088', '수유':'0276', '신촌아트레온':'0150', '압구정':'0040', '여의도':'0112',
+                   '영등포':'0059', '왕십리':'0074', '용산아이파크몰':'0013', '중계':'0131', '천호':'0199',
+                   '청담씨네시티':'0107', '피카다리1958':'0223', '하계':'0164', '홍대':'0191',
+                   'CINE DE CHEF 압구정':'P001', 'CINE DE CHEF 용산아이파크몰':'P013'}
     try:
         URL = "http://www.cgv.co.kr/common/showtimes/iframeTheater.aspx?areacode=01&theatercode=" + theater_dic[therater] + "&date=" + date
     except KeyError as e: # therater에 therater_dic에 없는 키값일 경우 키오류 발생
@@ -68,6 +74,31 @@ def get_cgv_movie_list(date, therater, shall):
             else:
                 continue
     return movie_split_list
+
+
+def set_cgv_therater_reg(therater):
+    therater = therater.replace(' ', '')
+
+    therater = re.sub(r"(강남|신논현|논현|역삼)", "강남", therater)
+    therater = re.sub(r"(강변|터미널|동서울터미널|동서울|버스터미널|동서울버스터미널|시외버스터미널|동서울시외버스터미널)", "강변", therater)
+    therater = re.sub(r"(건대입구|건대|건국대|건국대입구|건국대학교|건국대학교입구)", "건대입구", therater)
+    therater = re.sub(r"(대학로|혜화|성균관|성균관대|성대)", "대학로", therater)
+    therater = re.sub(r"(등촌|가양|증미)", "등촌", therater)
+    therater = re.sub(r"(명동역씨네라이브러리|명동씨네라이브러리|씨네라이브러리|씨네라이브)", "명동역 씨네라이브러리", therater)
+    therater = re.sub(r"(목동|오목교|양평)", "목동", therater)
+    therater = re.sub(r"(미아|미아사거리)", "미아", therater)
+    therater = re.sub(r"(상봉|망우|상봉터미널|망우터미널|상봉시외버스터미널|상봉버스터미널)", "상봉", therater)
+    therater = re.sub(r"(성신여대입구|성신여대|성신여자대학교|성신여자대학교입구|성신여자대|성신여자대입구)", "성신여대입구", therater)
+    therater = re.sub(r"(송파|장지|문정|복정|송파파크하비오)", "송파", therater)
+    therater = re.sub(r"(수유|쌍문)", "수유", therater)
+    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"", "", therater)
 
 
 def cgv_crawling(date, therater, shall):
