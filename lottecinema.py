@@ -6,6 +6,7 @@ from datetime import timedelta
 import telepot
 import logging
 import pickle
+import re
 
 # 롯데시네마
 # post방식으로 통신
@@ -18,9 +19,9 @@ import pickle
 #   - 상영관 : 1016(월드타워), 1003(노원), 1004(건대입구), 1008(청량리), 1009(김포공항)
 def get_lottecinema_movie_list(date, brch, shallcode):
     brch_dic = {'가산디지털':'1013', '가양':'1018', '강동':'9010', '건대입구':'1004', '김포공항':'1009',
-                '노원':'1003', '도곡':'1023', '독산':'1017', '브로드웨이(신사)':'9056', '서울대입구':'1012',
-                '수락산':'1019', '수유':'1022', '신도림':'1015', '신림':'1007', '에비뉴엘(명동)':'1001',
-                '영등포':'1002', '용산':'1014', '월드타워':'1016', '은평(롯데몰)':'1021', '장안':'9053',
+                '노원':'1003', '도곡':'1023', '독산':'1017', '브로드웨이':'9056', '서울대입구':'1012',
+                '수락산':'1019', '수유':'1022', '신도림':'1015', '신림':'1007', '에비뉴엘':'1001',
+                '영등포':'1002', '용산':'1014', '월드타워':'1016', '은평':'1021', '장안':'9053',
                 '청량리':'1008', '합정':'1010', '홍대입구':'1005', '황학':'1011'}
     sdate = date[:4] + "-" + date[4:6] + "-" + date[6:8]
 
@@ -29,8 +30,8 @@ def get_lottecinema_movie_list(date, brch, shallcode):
     dic = {"MethodName":"GetPlaySequence",
            "channelType":"HO",
            "osType":"",
-           "osVersion":"",
-           "playDate":sdate,
+               "osVersion":"",
+               "playDate":sdate,
            "cinemaID":"1|0001|"+brch_dic[brch],
            "representationMovieCode":""}
     parameters = {"paramList":str(dic)}
@@ -43,6 +44,41 @@ def get_lottecinema_movie_list(date, brch, shallcode):
     return line
 
 
+def set_lottecinema_brch_reg(brch):
+    brch = brch.replace(' ', '')
+
+    if brch[-1] == "점" or brch[-1] == "관" or brch[-1] == "역" or brch[-1] == "동":
+        brch = brch[:-1]
+
+    brch = re.sub(r"(가산디지털|가산|가디단|가디|가산디지털단지|디지털단지)", "가산디지털", brch)
+    brch = re.sub(r"(강동|천호|강동구청)", "강동", brch)
+    brch = re.sub(r"(건대입구|건대|건국대|건국대입구|건국대학교|건국대학교입구)", "건대입구", brch)
+    brch = re.sub(r"(브로드웨이|신사|신사브로드웨이|브로드웨이신사)", "브로드웨이", brch)
+    brch = re.sub(r"(서울대입구|서울대|관악구청|관악구|관악|서울대학교)", "서울대입구", brch)
+    brch = re.sub(r"(수유|강북구청|강북구)", "수유", brch)
+    brch = re.sub(r"(에비뉴엘|명동|명동에비뉴엘|에비뉴엘명동)", "에비뉴엘", brch)
+    brch = re.sub(r"(용산|용산아이파크몰|신용산|아이파크몰|아이파크몰용산)", "용산", brch)
+    brch = re.sub(r"(월드타워|잠실|롯데타워|롯데월드타워|롯데월드|잠실월드타워|월드타워잠실|잠실롯데타워|롯데타워잠실|잠실롯데월드타워"
+                  r"|롯데월드타워잠실|잠실롯데월드|롯데월드잠실)", "월드타워", brch)
+    brch = re.sub(r"(은평|구파발|은평롯데몰|롯데몰은평|구파발롯데몰|롯데몰구파발)", "은평", brch)
+    brch = re.sub(r"(홍대입구|홍대|홍익대학교)", "홍대입구", brch)
+
+    return brch
+
+
+def set_lottecinema_shall_reg(shall):
+    shall = shall.replace(' ', '')
+
+    shall = re.sub(r"(샤롯데|CHARLOTTE)", "샤롯데", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(아르떼클래식|클래식아르떼|ARTECLASSIC|CLASSICARTE|ARTE)", "아르떼클래식", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(수퍼플렉스G|슈퍼플렉스G|수퍼플랙스G|슈퍼플랙스G|SUPERPLEXG|SUPERFLEXG)", "수퍼플렉스G", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(수퍼4D|슈퍼4D|SUPER4D|4D|4DX)", "수퍼4D", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(씨네패밀리|CINEFAMILY|시네패밀리|씨내패밀리|씨네페밀리|씨내페밀리)", "씨네패밀리", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(수퍼S|슈퍼S|SUPERS)", "수퍼S", shall, flags=re.IGNORECASE)
+
+    return shall
+
+
 # 현재 날짜에 상영중인 영화 제목의 고유번호를 반환함
 def get_lottecinema_movie_no_list(response):
     movielst = []
@@ -53,8 +89,11 @@ def get_lottecinema_movie_no_list(response):
     return movielst
 
 def lottecinema_crawling(date, brch, shall):
-    shall_dic = {'일반':100, '샤롯데':300, '아르떼 클래식':400, '수퍼플렉스 G':941,
+    # 수퍼플렉스관은 일반으로 분류됨
+    shall_dic = {'일반':100, '샤롯데':300, '아르떼클래식':400, '수퍼플렉스 G':941,
                  '수퍼 4D':930, '씨네패밀리':960, '수퍼 S':980}
+    brch = set_lottecinema_brch_reg(brch)
+    shall = set_lottecinema_shall_reg(shall)
     filename = 'lottecinema' + brch + shall + '.pickle'
     shallcode = 0
 

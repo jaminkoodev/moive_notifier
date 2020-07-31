@@ -17,12 +17,17 @@ import logging
 #   date : 날짜 YYYYMMDD
 def get_cgv_movie_list(date, therater, shall):
     theater_dic = {'강남':'0056', '강변':'0001', '건대입구':'0229', '구로':'0010', '대학로':'0063',
-                   '동대문':'0252', '등촌':'0230', '명동':'0009', '명동역 씨네라이브러리':'0105',
+                   '동대문':'0252', '등촌':'0230', '명동':'0009', '명동역씨네라이브러리':'0105',
                    '목동':'0011', '미아':'0057', '불광':'0030', '상봉':'0046', '성신여대입구':'0300',
                    '송파':'0088', '수유':'0276', '신촌아트레온':'0150', '압구정':'0040', '여의도':'0112',
                    '영등포':'0059', '왕십리':'0074', '용산아이파크몰':'0013', '중계':'0131', '천호':'0199',
                    '청담씨네시티':'0107', '피카다리1958':'0223', '하계':'0164', '홍대':'0191',
-                   'CINE DE CHEF 압구정':'P001', 'CINE DE CHEF 용산아이파크몰':'P013'}
+                   'CINEDECHEF압구정':'P001', 'CINEDECHEF용산아이파크몰':'P013'}
+    shall_dic = {'IMAX':'07', 'CINE de CHEF':'103', 'GOLD CLASS':'99', '씨네앤포레':'0001',
+                 '씨네앤리빙룸':'LM', 'SphereX':'SPX', 'STARIUM':'110', 'PREMIUM':'PRM',
+                 'Sweet Box':'09', 'SKYBOX':'SKY', 'CINE KIDS':'CK', 'SOUNDX':'SDX',
+                 '4DX':'4D14', 'SCREENX':'SCX', '4DX SCREEN':'4DXSC', }
+
     try:
         URL = "http://www.cgv.co.kr/common/showtimes/iframeTheater.aspx?areacode=01&theatercode=" + theater_dic[therater] + "&date=" + date
     except KeyError as e: # therater에 therater_dic에 없는 키값일 경우 키오류 발생
@@ -79,29 +84,61 @@ def get_cgv_movie_list(date, therater, shall):
 def set_cgv_therater_reg(therater):
     therater = therater.replace(' ', '')
 
-    therater = re.sub(r"(강남|신논현|논현|역삼)", "강남", therater)
+    if therater[-1] == "점" or therater[-1] == "관" or therater[-1] == "역":
+        therater = therater[:-1]
+
+    therater = re.sub(r"(강남|신논현|논현|역삼|논현동|역삼동|신논현동)", "강남", therater)
     therater = re.sub(r"(강변|터미널|동서울터미널|동서울|버스터미널|동서울버스터미널|시외버스터미널|동서울시외버스터미널)", "강변", therater)
     therater = re.sub(r"(건대입구|건대|건국대|건국대입구|건국대학교|건국대학교입구)", "건대입구", therater)
-    therater = re.sub(r"(대학로|혜화|성균관|성균관대|성대)", "대학로", therater)
-    therater = re.sub(r"(등촌|가양|증미)", "등촌", therater)
-    therater = re.sub(r"(명동역씨네라이브러리|명동씨네라이브러리|씨네라이브러리|씨네라이브)", "명동역 씨네라이브러리", therater)
+    therater = re.sub(r"(대학로|혜화|성균관|성균관대|성대|헤화동)", "대학로", therater)
+    therater = re.sub(r"(등촌|가양|증미|등촌동|가양동|증미동)", "등촌", therater)
+    therater = re.sub(r"(명동역씨네라이브러리|명동씨네라이브러리|씨네라이브러리|씨네라이브)", "명동역씨네라이브러리", therater)
     therater = re.sub(r"(목동|오목교|양평)", "목동", therater)
-    therater = re.sub(r"(미아|미아사거리)", "미아", therater)
-    therater = re.sub(r"(상봉|망우|상봉터미널|망우터미널|상봉시외버스터미널|상봉버스터미널)", "상봉", therater)
+    therater = re.sub(r"(미아|미아사거리|미아동)", "미아", therater)
+    therater = re.sub(r"(상봉|망우|상봉터미널|망우터미널|상봉시외버스터미널|상봉버스터미널|망우동|상봉동)", "상봉", therater)
     therater = re.sub(r"(성신여대입구|성신여대|성신여자대학교|성신여자대학교입구|성신여자대|성신여자대입구)", "성신여대입구", therater)
-    therater = re.sub(r"(송파|장지|문정|복정|송파파크하비오)", "송파", therater)
-    therater = re.sub(r"(수유|쌍문)", "수유", therater)
-    therater = re.sub(r"", "", therater)
-    therater = re.sub(r"", "", therater)
-    therater = re.sub(r"", "", therater)
-    therater = re.sub(r"", "", therater)
-    therater = re.sub(r"", "", therater)
-    therater = re.sub(r"", "", therater)
-    therater = re.sub(r"", "", therater)
-    therater = re.sub(r"", "", therater)
+    therater = re.sub(r"(송파|장지|문정|북정|송파파크하비오|장지동|문정동|북정동)", "송파", therater)
+    therater = re.sub(r"(수유|쌍문|수유동|쌍문동)", "수유", therater)
+    therater = re.sub(r"(신촌아트레온|신촌|연대|연세대|연세대학교|신촌동)", "신촌아트레온", therater)
+    therater = re.sub(r"(여의도|여의나루)", "여의도", therater)
+    therater = re.sub(r"(영등포|타임스퀘어|영등포타임스퀘어)", "영등포", therater)
+    therater = re.sub(r"(용산아이파크몰|용산|신용산|아이파크몰|아이파크몰용산)", "용산아이파크몰", therater)
+    therater = re.sub(r"(청담씨네시티|씨네시티|청담|씨네시티청담|청담씨네씨티|씨네씨티|씨네씨티청담)", "청담씨네시티", therater)
+    therater = re.sub(r"(피카디리1958|피카디리|종로피카디리|종로피카디리1958|종로3가|종로|종로3가피카디리|종로3가피카디리1958|피카다리"
+                      r"|피카다리1958|종로피카다리|종로3가피카다리|종로피카다리1958|종로3가피카다리1958)", "피카다리1958", therater)
+    therater = re.sub(r"(홍대|홍대입구|홍익대학교)", "홍대", therater)
+    therater = re.sub(r"(CINEDECHEF압구정|씨네드셰프압구정)", "CINEDECHEF압구정", therater, flags=re.IGNORECASE)
+    therater = re.sub(r"(CINEDECHEF용산아이파크몰|CINEDECHEF용산|CINEDECHEF아이파크몰용산|CINEDECHEF신용산|CINEDECHEF아이파크몰"
+                      r"|씨네드셰프용산아이파크몰|씨네드셰프용산|씨네드셰프아이파크몰용산|씨네드셰프신용산|씨네드셰프아이파크몰)",
+                      "CINEDECHEF용산아이파크몰", therater, flags=re.IGNORECASE)
+
+    return therater
+
+
+def set_cgv_shall_reg(shall):
+    shall = shall.replace(' ', '')
+
+    #IMAX, 4DX, CINE de CHEF, SCREENX, Laser
+
+    shall = re.sub(r"(IMAX|아이맥스|용아맥|아맥)", "IMAX", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(CINEDECHEF|씨네드셰프|시네드셰프)", "CINE de CHEF", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(GOLDCLASS|골드클래스|골드클레스|GOLD)", "GOLD CLASS", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(SCREENX|스크린엑스|스크린X)", "SCREENX", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(4DX|4D|4디|4디엑스|4D엑스|뽀디|포디|뽀디엑스|포디엑스)", "4DX", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(STARIUM|스타리움|퓨리움)", "STARIUM", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(PREMIUM|프리미엄)", "PREMIUM", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"", "", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"", "", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"", "", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"", "", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"", "", shall, flags=re.IGNORECASE)
+
+
+
 
 
 def cgv_crawling(date, therater, shall):
+    therater = set_cgv_therater_reg(therater)
     while True:
         movie_list = get_cgv_movie_list(date, therater, shall)
         try:
@@ -141,15 +178,25 @@ if __name__ == "__main__":
     mc = ""  # My Channel
     bot = telepot.Bot(mytoken)
 
-    logging.basicConfig(filename='./test.log',
-                        level=logging.INFO,
-                        format='[%(asctime)s][%(levelname)s] %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S')
-    logging.info('서버가 정상적으로 시작되었습니다.')
-    logging.info('검색 시작 날짜 : {}'.format(latest_date))
+    logger = logging.getLogger(__name__)
+    formatter = logging.Formatter(fmt='[%(asctime)s][%(levelname)s|%(lineno)s] %(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+
+    sh = logging.StreamHandler()
+    fh = logging.FileHandler('./log.log')
+
+    sh.setFormatter(formatter)
+    fh.setFormatter(formatter)
+
+    logger.addHandler(sh)
+    logger.addHandler(fh)
+    logger.setLevel(level=logging.INFO)
+
+    logger.info('서버가 정상적으로 시작되었습니다.')
+    logger.info('검색 디폴트 날짜 : {}'.format(latest_date))
 
     # CGV : threading.Thread(target=cgv_crawling, args=(검색시작날짜, 지점, 상영관,))
-    cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '용산', '4DX',))
+    cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '종로3가', '9관',))
     cgv.start()
     cgv.join()
 

@@ -22,8 +22,9 @@ def get_megabox_movie_list(date, brch, shall):
                 '마곡':'1572', '목동':'1581', '상봉':'1311', '상암월드컵경기장':'1211', '성수':'1331',
                 '센트럴':'1371', '송파파크하비오':'1381', '신촌':'1202', '은평':'1221', '이수':'1561',
                 '창동':'1321', '코엑스':'1351', '홍대':'1212', '화곡':'1571', 'ARTNINE':'1562'}
-    shall_dic = {'돌비시네마':'DBC', '더 부티크':'TB', 'MX관':'MX',
-                 '컴포트':'CFT', '메가박스 키즈':'MKB', '더 퍼스트 클럽':'TFC'}
+
+    brch = set_megabox_brch_reg(brch)
+    shall = set_megabox_shall_reg(shall)
 
     crtde = datetime.today().strftime("%Y%m%d")
 
@@ -45,16 +46,25 @@ def get_megabox_movie_list(date, brch, shall):
 def set_megabox_brch_reg(brch):
     brch = brch.replace(' ', '')
 
-    if brch[-1] == "점" or brch[-1] == "관" or brch[-1] == "역" or brch[-1] == "동":
-        brch = brch[:-2]
+    if brch[-1] == "점" or brch[-1] == "관" or brch[-1] == "역":
+        brch = brch[:-1]
 
-    brch = re.sub(r"(상암|상암월드컵경기장|월드컵경기장|월드컵경기장상암)", "상암월드컵경기장", brch)
+    brch = re.sub(r"(강남대로|씨티)", "강남대로", brch)
+    brch = re.sub(r"(강동|강동구청|둔촌동|둔촌|천호)", "강동", brch)
+    brch = re.sub(r"(동대문|동대문역사문화공원|동역사|디디피|DDP|동대문디자인플라자)", "동대문", brch)
+    brch = re.sub(r"(마곡|발산)", "마곡", brch)
+    brch = re.sub(r"(목동|오목교)", "목동", brch)
+    brch = re.sub(r"(상봉|중랑)", "상봉", brch)
+    brch = re.sub(r"(상암월드컵경기장|상암|월드컵경기장|월드컵경기장상암)", "상암월드컵경기장", brch)
+    brch = re.sub(r"(성수|서울숲|뚝섬)", "성수", brch)
     brch = re.sub(r"(센트럴|샌트럴|센트랄|샌트랄|고터|고속터미널|고속터미널역|터미널|강남터미널)", "센트럴", brch)
     brch = re.sub(r"(송파|문정|북정|송파파크하비오|파크하비오|송파하비오|송파하비오파크)", "송파파크하비오", brch)
     brch = re.sub(r"(신촌|신촌아트레온|아트레온|연세|연세대|아트레온신촌|신촌기차)", "신촌", brch)
+    brch = re.sub(r"(은평|연신내|불광)", "은평", brch)
+    brch = re.sub(r"(창동|쌍문|쌍문동)", "(창동|쌍문|쌍문동)", brch)
     brch = re.sub(r"(코엑스|코엑스몰|봉은사|삼성|삼성동)", "코엑스", brch)
     brch = re.sub(r"(홍대|홍대입구|홍익대학교)", "홍대", brch)
-    brch = re.sub(r"(ARTNINE|artnine|아트나인|아트나인이수|이수아트나인)", "ARTNINE", brch, flags=re.IGNORECASE)
+    brch = re.sub(r"(ARTNINE|아트나인|아트나인이수|이수아트나인)", "ARTNINE", brch, flags=re.IGNORECASE)
 
     return brch
 
@@ -63,14 +73,14 @@ def set_megabox_shall_reg(shall):
     shall = shall.replace(' ', '')
 
     if shall[-1] == "점" or shall[-1] == "관":
-        shall = shall[:-2]
+        shall = shall[:-1]
 
     shall = re.sub(r"(DBC|돌비시네마|돌비|시네마|dolbycinema|dollbycinema|dolby)", "DBC", shall, flags=re.IGNORECASE)
     shall = re.sub(r"(TB|thebotique|theboutique|boutique|botique|더부티크|부티크|더부티|부티크|부티)", "TB", shall, flags=re.IGNORECASE)
     shall = re.sub(r"(MX|엠엑스|앰엑스|atmos|dolbyatmos)", "MX", shall, flags=re.IGNORECASE)
     shall = re.sub(r"(CFT|컴포트|COMFORT|CF|CP|CPT)", "CFT", shall, flags=re.IGNORECASE)
     shall = re.sub(r"(MKB|메가박스키즈|키즈|키드|어린이|메가키즈|MEGABOXKIDS|MEGABOXKID|KID|MEGAKID|MEGAKIDS|KIDS)", "MKB", shall, flags=re.IGNORECASE)
-    shall = re.sub(r"(TFC|TF|THEFIRSTCLUB|THRFIRSTCLUBS|더퍼스트클럽|더퍼스트|퍼스트클럽|퍼스트클래스|더퍼스트클래스|)", "TFC", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(TFC|TF|THEFIRSTCLUB|THRFIRSTCLUBS|더퍼스트클럽|더퍼스트|퍼스트클럽|퍼스트클래스|더퍼스트클래스)", "TFC", shall, flags=re.IGNORECASE)
 
     return shall
 
@@ -88,9 +98,10 @@ def megabox_crawling(date, brch, shall):
                  'CFT': '컴포트관', 'MKB': 'MEGA KIDS', 'TFC': 'The First Class'}
     filename = 'megabox' + brch + shall + '.pickle'
     shallname = ""
+    sdate = date
 
     try:
-        shallname = shall_dic[shall]
+        shallname = shall_dic[set_megabox_shall_reg(shall)]
         with open(filename, 'rb') as f:
             sdate = pickle.load(f)
 
@@ -140,11 +151,11 @@ def megabox_crawling(date, brch, shall):
             time.sleep(60)
 
 if __name__ == "__main__":
-    latest_date = "20200727" # 프로그램을 실행시킨 시간부터 탐색
+    latest_date = "20200801" # 프로그램을 실행시킨 시간부터 탐색
     t = ['월', '화', '수', '목', '금', '토', '일']
     # 텔레그램 봇 연결 파트
-    mytoken = ""  # 텔레그램 봇 토큰
-    mc = ""  # My Channel
+    mytoken = "1398195098:AAFf373VgVEudkjjpP3M_ltbDrutHyUWQ5s"  # 텔레그램 봇 토큰
+    mc = "-1001471485186"  # My Channel
     bot = telepot.Bot(mytoken)
 
     logger = logging.getLogger(__name__)

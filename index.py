@@ -83,7 +83,42 @@ def get_cgv_movie_list(date, therater, shall):
     return movie_split_list
 
 
+def set_cgv_therater_reg(therater):
+    therater = therater.replace(' ', '')
+
+    if therater[-1] == "점" or therater[-1] == "관" or therater[-1] == "역":
+        therater = therater[:-1]
+
+    therater = re.sub(r"(강남|신논현|논현|역삼|논현동|역삼동|신논현동)", "강남", therater)
+    therater = re.sub(r"(강변|터미널|동서울터미널|동서울|버스터미널|동서울버스터미널|시외버스터미널|동서울시외버스터미널)", "강변", therater)
+    therater = re.sub(r"(건대입구|건대|건국대|건국대입구|건국대학교|건국대학교입구)", "건대입구", therater)
+    therater = re.sub(r"(대학로|혜화|성균관|성균관대|성대|헤화동)", "대학로", therater)
+    therater = re.sub(r"(등촌|가양|증미|등촌동|가양동|증미동)", "등촌", therater)
+    therater = re.sub(r"(명동역씨네라이브러리|명동씨네라이브러리|씨네라이브러리|씨네라이브)", "명동역씨네라이브러리", therater)
+    therater = re.sub(r"(목동|오목교|양평)", "목동", therater)
+    therater = re.sub(r"(미아|미아사거리|미아동)", "미아", therater)
+    therater = re.sub(r"(상봉|망우|상봉터미널|망우터미널|상봉시외버스터미널|상봉버스터미널|망우동|상봉동)", "상봉", therater)
+    therater = re.sub(r"(성신여대입구|성신여대|성신여자대학교|성신여자대학교입구|성신여자대|성신여자대입구)", "성신여대입구", therater)
+    therater = re.sub(r"(송파|장지|문정|북정|송파파크하비오|장지동|문정동|북정동)", "송파", therater)
+    therater = re.sub(r"(수유|쌍문|수유동|쌍문동)", "수유", therater)
+    therater = re.sub(r"(신촌아트레온|신촌|연대|연세대|연세대학교|신촌동)", "신촌아트레온", therater)
+    therater = re.sub(r"(여의도|여의나루)", "여의도", therater)
+    therater = re.sub(r"(영등포|타임스퀘어|영등포타임스퀘어)", "영등포", therater)
+    therater = re.sub(r"(용산아이파크몰|용산|신용산|아이파크몰|아이파크몰용산)", "용산아이파크몰", therater)
+    therater = re.sub(r"(청담씨네시티|씨네시티|청담|씨네시티청담|청담씨네씨티|씨네씨티|씨네씨티청담)", "청담씨네시티", therater)
+    therater = re.sub(r"(피카디리1958|피카디리|종로피카디리|종로피카디리1958|종로3가|종로|종로3가피카디리|종로3가피카디리1958|피카다리"
+                      r"|피카다리1958|종로피카다리|종로3가피카다리|종로피카다리1958|종로3가피카다리1958)", "피카다리1958", therater)
+    therater = re.sub(r"(홍대|홍대입구|홍익대학교)", "홍대", therater)
+    therater = re.sub(r"(CINEDECHEF압구정|씨네드셰프압구정)", "CINEDECHEF압구정", therater, flags=re.IGNORECASE)
+    therater = re.sub(r"(CINEDECHEF용산아이파크몰|CINEDECHEF용산|CINEDECHEF아이파크몰용산|CINEDECHEF신용산|CINEDECHEF아이파크몰"
+                      r"|씨네드셰프용산아이파크몰|씨네드셰프용산|씨네드셰프아이파크몰용산|씨네드셰프신용산|씨네드셰프아이파크몰)",
+                      "CINEDECHEF용산아이파크몰", therater, flags=re.IGNORECASE)
+
+    return therater
+
+
 def cgv_crawling(date, therater, shall):
+    therater = set_cgv_therater_reg(therater)
     filename = 'cgv' + therater + shall + '.pickle'
 
     try:
@@ -270,6 +305,41 @@ def get_lottecinema_movie_list(date, brch, shallcode):
     return line
 
 
+def set_lottecinema_brch_reg(brch):
+    brch = brch.replace(' ', '')
+
+    if brch[-1] == "점" or brch[-1] == "관" or brch[-1] == "역" or brch[-1] == "동":
+        brch = brch[:-1]
+
+    brch = re.sub(r"(가산디지털|가산|가디단|가디|가산디지털단지|디지털단지)", "가산디지털", brch)
+    brch = re.sub(r"(강동|천호|강동구청)", "강동", brch)
+    brch = re.sub(r"(건대입구|건대|건국대|건국대입구|건국대학교|건국대학교입구)", "건대입구", brch)
+    brch = re.sub(r"(브로드웨이|신사|신사브로드웨이|브로드웨이신사)", "브로드웨이", brch)
+    brch = re.sub(r"(서울대입구|서울대|관악구청|관악구|관악|서울대학교)", "서울대입구", brch)
+    brch = re.sub(r"(수유|강북구청|강북구)", "수유", brch)
+    brch = re.sub(r"(에비뉴엘|명동|명동에비뉴엘|에비뉴엘명동)", "에비뉴엘", brch)
+    brch = re.sub(r"(용산|용산아이파크몰|신용산|아이파크몰|아이파크몰용산)", "용산", brch)
+    brch = re.sub(r"(월드타워|잠실|롯데타워|롯데월드타워|롯데월드|잠실월드타워|월드타워잠실|잠실롯데타워|롯데타워잠실|잠실롯데월드타워"
+                  r"|롯데월드타워잠실|잠실롯데월드|롯데월드잠실)", "월드타워", brch)
+    brch = re.sub(r"(은평|구파발|은평롯데몰|롯데몰은평|구파발롯데몰|롯데몰구파발)", "은평", brch)
+    brch = re.sub(r"(홍대입구|홍대|홍익대학교)", "홍대입구", brch)
+
+    return brch
+
+
+def set_lottecinema_shall_reg(shall):
+    shall = shall.replace(' ', '')
+
+    shall = re.sub(r"(샤롯데|CHARLOTTE)", "샤롯데", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(아르떼클래식|클래식아르떼|ARTECLASSIC|CLASSICARTE|ARTE)", "아르떼클래식", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(수퍼플렉스G|슈퍼플렉스G|수퍼플랙스G|슈퍼플랙스G|SUPERPLEXG|SUPERFLEXG)", "수퍼플렉스G", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(수퍼4D|슈퍼4D|SUPER4D|4D|4DX)", "수퍼4D", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(씨네패밀리|CINEFAMILY|시네패밀리|씨내패밀리|씨네페밀리|씨내페밀리)", "씨네패밀리", shall, flags=re.IGNORECASE)
+    shall = re.sub(r"(수퍼S|슈퍼S|SUPERS)", "수퍼S", shall, flags=re.IGNORECASE)
+
+    return shall
+
+
 # 현재 날짜에 상영중인 영화 제목의 고유번호를 반환함
 def get_lottecinema_movie_no_list(response):
     movielst = []
@@ -282,6 +352,8 @@ def get_lottecinema_movie_no_list(response):
 def lottecinema_crawling(date, brch, shall):
     shall_dic = {'일반':100, '샤롯데':300, '아르떼 클래식':400, '수퍼플렉스 G':941,
                  '수퍼 4D':930, '씨네패밀리':960, '수퍼 S':980}
+    brch = set_lottecinema_brch_reg(brch)
+    shall = set_lottecinema_shall_reg(shall)
     filename = 'lottecinema' + brch + shall + '.pickle'
     shallcode = 0
 
@@ -370,6 +442,7 @@ if __name__ == "__main__":
 
     cgv.start()
     megabox.start()
+
     cgv.join()
     megabox.join()
 
