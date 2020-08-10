@@ -19,7 +19,7 @@ megabox = threading.Thread(target=megabox_crawling, args=(검색할 날짜, 지�
 ```
 - 검색할 날짜 : YYYYMMDD 형식으로 과거의 날짜가 아닌 미래의 날짜로 저장
 - 지점 : 지역명만 저장 ex) 코엑스, 목동, 동대문, ...
-- 상영관 : 검색할 상영관을 영문으로 저장 ex)돌비시네마 | 더 부티크 | MX관 | 컴포트 | 메가박스 키즈 | 더 퍼스트 클럽 (DBC | TB | MX | CFT | MKB | TFC)
+- 상영관 : 검색할 상영관 ex)돌비시네마, 더 부티크, MX관, 컴포트, 메가박스 키즈, 더 퍼스트 클럽
 
 ### LOTTECINEMA
 ```
