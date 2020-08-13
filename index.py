@@ -438,12 +438,14 @@ if __name__ == "__main__":
     # MEGABOX : threading.Thread(target=megabox_crawling, args=(검색디폴트날짜, 지점, 상영관,))
     cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '용산', 'IMAX',))
     megabox = threading.Thread(target=megabox_crawling, args=(latest_date, '코엑스', 'DBC',))
-    lottecindema = threading.Thread(target=megabox_crawling, args=(latest_date, '월드타워', '수퍼플렉스 G',))
+    lottecinema = threading.Thread(target=lottecinema_crawling, args=(latest_date, '월드타워', '수퍼플렉스 G',))
 
     cgv.start()
     megabox.start()
+    lottecinema.start()
 
     cgv.join()
     megabox.join()
+    lottecinema.join()
 
     logger.info("Server Exit")
