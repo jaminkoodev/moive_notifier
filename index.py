@@ -24,6 +24,11 @@ def get_cgv_movie_list(date, therater, shall):
                    '영등포': '0059', '왕십리': '0074', '용산아이파크몰': '0013', '중계': '0131', '천호': '0199',
                    '청담씨네시티': '0107', '피카다리1958': '0223', '하계': '0164', '홍대': '0191',
                    'CINE DE CHEF 압구정': 'P001', 'CINE DE CHEF 용산아이파크몰': 'P013'}
+    
+    shall_dic = {'IMAX':'07', 'CINE de CHEF':'103', 'GOLD CLASS':'99', '씨네앤포레':'0001',
+                 '씨네앤리빙룸':'LM', 'SphereX':'SPX', 'STARIUM':'110', 'PREMIUM':'PRM',
+                 'Sweet Box':'09', 'SKYBOX':'SKY', 'CINE KIDS':'CK', 'SOUNDX':'SDX',
+                 '4DX':'4D14', 'SCREENX':'SCX', '4DX SCREEN':'4DXSC', }
     URL = "http://www.cgv.co.kr/common/showtimes/iframeTheater.aspx?areacode=01&theatercode="
     try:
         URL += theater_dic[therater] + "&date=" + date
@@ -33,6 +38,12 @@ def get_cgv_movie_list(date, therater, shall):
     response = requests.get(URL)
     html = response.text
     soup = BeautifulSoup(html, 'html.parser')
+
+    chkmonth = soup.select_one('#slider > div:nth-child(1) > ul > li.on > div > a > span').get_text().strip()[0:2]
+    chkday = soup.select_one('#slider > div:nth-child(1) > ul > li.on > div > a > strong').get_text().strip()
+    chkdate = chkmonth + chkday
+    if chkdate != date[4:8]:
+        return []
 
     search_special_hall = shall  # IMAX, 4DX, CINE de CHEF, SCREENX, Laser
 
@@ -431,7 +442,7 @@ def lottecinema_crawling(date, brch, shall):
 
 if __name__ == "__main__":
     t = ['월', '화', '수', '목', '금', '토', '일']
-    latest_date = "20200904" #datetime.today().strftime("%Y%m%d")  # 프로그램을 실행시킨 시간부터 탐색
+    latest_date = "20200901" #datetime.today().strftime("%Y%m%d")  # 프로그램을 실행시킨 시간부터 탐색
     # 텔레그램 봇 연결 파트
     mytoken = ""
     mc = ""
@@ -456,7 +467,7 @@ if __name__ == "__main__":
     # 영화 리스트 불러오기
     # CGV : threading.Thread(target=cgv_crawling, args=(검색디폴트날짜, 지점, 상영관,))
     # MEGABOX : threading.Thread(target=megabox_crawling, args=(검색디폴트날짜, 지점, 상영관,))
-    cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '용산', 'IMAX',))
+    cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '천호', 'IMAX',))
     megabox = threading.Thread(target=megabox_crawling, args=(latest_date, '코엑스', 'DBC',))
     lottecinema = threading.Thread(target=lottecinema_crawling, args=(latest_date, '월드타워', '수퍼플렉스G',))
 
