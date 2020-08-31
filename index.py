@@ -152,8 +152,12 @@ def cgv_crawling(date, therater, shall):
                         sendmsg = sendmsg + "[" + movie_list[i][j] + "](" + movie_list[i][j + 2] + ") "
                         sendmsg = sendmsg + movie_list[i][j + 1] + "\n"
                 sendmsg += "\n"
-
-            bot.sendMessage(mc, sendmsg, parse_mode="Markdown", disable_web_page_preview=True)
+            try:
+                bot.sendMessage(mc, sendmsg, parse_mode="Markdown", disable_web_page_preview=True)
+            except Exception as e:
+                logger.debug("CGV {} {} ({})Message Exception : {}".format(therater, shall, sdate, e))
+                raise ValueError
+                
             # 결과를 찾았으니 다음날로 넘어간다
             sdate = datetime.strptime(sdate, "%Y%m%d")
             sdate += timedelta(days=1)
@@ -217,15 +221,15 @@ def megabox_crawling(date, brch, shall):
 
     try:
         shallname = shall_dic[shall]
+    except KeyError as e:
+        logger.debug('shall_dic에서 {}을 찾을 수 없습니다. : {}'.format(shall, e))
+        shallname = "Dolby Cinema"
+    try:
         with open(filename, 'rb') as f:
             sdate = pickle.load(f)
-
     except (EOFError, FileNotFoundError) as e:
         logger.debug('{}을 찾을 수 없어 {}(기본날짜)부터 검색을 시작합니다. : {}'.format(filename, date, e))
         sdate = date
-    except KeyError as e:
-        logger.debug('shall_dic에서 {}을 찾을 수 없습니다. : {}'.format(shall, e))
-        shall = 'Dolby Cinema'
 
     logger.info('메가박스 검색 시작 날짜 : {}'.format(sdate))
     while True:
@@ -257,7 +261,11 @@ def megabox_crawling(date, brch, shall):
                     sendmsg = sendmsg + "[" + movie_split_list[i][j] + "](https://www.megabox.co.kr/booking) "
                     sendmsg = sendmsg + movie_split_list[i][j + 1] + "\n"
                 sendmsg += "\n"
-            bot.sendMessage(mc, sendmsg, parse_mode="Markdown", disable_web_page_preview=True)
+            try:
+                bot.sendMessage(mc, sendmsg, parse_mode="Markdown", disable_web_page_preview=True)
+            except Exception as e:
+                logger.debug("Megabox {} {} ({})Message Exception : {}".format(brch, shall, sdate, e))
+                raise ValueError
             # 결과를 찾았으니 다음날로 넘어간다
             sdate = datetime.strptime(sdate, "%Y%m%d")
             sdate += timedelta(days=1)
@@ -299,9 +307,13 @@ def get_lottecinema_movie_list(date, brch, shallcode):
     response = requests.post(URL, data=parameters).json()
 
     line = []
-    for mvlst in response['PlaySeqs']['Items']:
-        if mvlst['ScreenDivisionCode'] == shallcode:
-            line.append(mvlst)
+    try:
+        for mvlst in response['PlaySeqs']['Items']:
+            if mvlst['ScreenDivisionCode'] == shallcode:
+                line.append(mvlst)
+    except Exception as e:
+        logger.debug("롯데시네마 Not Found Exception : {}".format(e))
+        line = []
     return line
 
 
@@ -350,22 +362,26 @@ def get_lottecinema_movie_no_list(response):
     return movielst
 
 def lottecinema_crawling(date, brch, shall):
-    shall_dic = {'일반':100, '샤롯데':300, '아르떼 클래식':400, '수퍼플렉스 G':941,
-                 '수퍼 4D':930, '씨네패밀리':960, '수퍼 S':980}
+    shall_dic = {'일반':100, '샤롯데':300, '아르떼 클래식':400, '수퍼플렉스G':941,
+                 '수퍼4D':930, '씨네패밀리':960, '수퍼S':980}
     brch = set_lottecinema_brch_reg(brch)
     shall = set_lottecinema_shall_reg(shall)
     filename = 'lottecinema' + brch + shall + '.pickle'
     shallcode = 0
-
+    sdate = ""
+    
     try:
         shallcode = shall_dic[shall]
+    except KeyError as e:
+        logger.debug('shall_dic에서 {}을 찾을 수 없습니다. : {}'.format(shall, e))
+        shallcode = 100
+    try:
         with open(filename, 'rb') as f:
             sdate = pickle.load(f)
-
-    except (EOFError, FileNotFoundError):
+    except (EOFError, FileNotFoundError) as e:
+        logger.debug('{}을 찾을 수 없어 {}(기본날짜)부터 검색을 시작합니다. : {}'.format(filename, date, e))
         sdate = date
-    except KeyError:
-        shallcode = 100
+    
 
     logger.info('롯데시네마 검색 시작 날짜 : {}'.format(sdate))
     while True:
@@ -397,7 +413,11 @@ def lottecinema_crawling(date, brch, shall):
                     sendmsg = sendmsg + "[" + movie_split_list[i][j] + "](https://www.lottecinema.co.kr/NLCHS/Ticketing/Schedule) "
                     sendmsg = sendmsg + movie_split_list[i][j + 1] + "\n"
                 sendmsg += "\n"
-            bot.sendMessage(mc, sendmsg, parse_mode="Markdown", disable_web_page_preview=True)
+            try:
+                bot.sendMessage(mc, sendmsg, parse_mode="Markdown", disable_web_page_preview=True)
+            except Exception as e:
+                logger.debug("롯데시네마 {} {} ({}) Message Exception : {}".format(brch, shall, sdate, e))
+                raise ValueError
             # 결과를 찾았으니 다음날로 넘어간다
             sdate = datetime.strptime(sdate, "%Y%m%d")
             sdate += timedelta(days=1)
@@ -411,7 +431,7 @@ def lottecinema_crawling(date, brch, shall):
 
 if __name__ == "__main__":
     t = ['월', '화', '수', '목', '금', '토', '일']
-    latest_date = "20200730" #datetime.today().strftime("%Y%m%d")  # 프로그램을 실행시킨 시간부터 탐색
+    latest_date = "20200904" #datetime.today().strftime("%Y%m%d")  # 프로그램을 실행시킨 시간부터 탐색
     # 텔레그램 봇 연결 파트
     mytoken = ""
     mc = ""
@@ -438,7 +458,7 @@ if __name__ == "__main__":
     # MEGABOX : threading.Thread(target=megabox_crawling, args=(검색디폴트날짜, 지점, 상영관,))
     cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '용산', 'IMAX',))
     megabox = threading.Thread(target=megabox_crawling, args=(latest_date, '코엑스', 'DBC',))
-    lottecinema = threading.Thread(target=lottecinema_crawling, args=(latest_date, '월드타워', '수퍼플렉스 G',))
+    lottecinema = threading.Thread(target=lottecinema_crawling, args=(latest_date, '월드타워', '수퍼플렉스G',))
 
     cgv.start()
     megabox.start()
