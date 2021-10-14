@@ -1,4 +1,4 @@
-# Moive_Notifier
+# moive_notifier
 3대 멀티플렉스 상영관(CGV, 메가박스, 롯데시네마) 예매 사이트가 열릴 경우 텔레그램 채널로 알림 메시지를 보냄.
 
 ## index.py
