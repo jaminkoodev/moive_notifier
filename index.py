@@ -24,7 +24,7 @@ def get_cgv_movie_list(date, therater, shall):
                    '영등포': '0059', '왕십리': '0074', '용산아이파크몰': '0013', '중계': '0131', '천호': '0199',
                    '청담씨네시티': '0107', '피카다리1958': '0223', '하계': '0164', '홍대': '0191',
                    'CINE DE CHEF 압구정': 'P001', 'CINE DE CHEF 용산아이파크몰': 'P013'}
-    
+
     shall_dic = {'IMAX':'07', 'CINE de CHEF':'103', 'GOLD CLASS':'99', '씨네앤포레':'0001',
                  '씨네앤리빙룸':'LM', 'SphereX':'SPX', 'STARIUM':'110', 'PREMIUM':'PRM',
                  'Sweet Box':'09', 'SKYBOX':'SKY', 'CINE KIDS':'CK', 'SOUNDX':'SDX',
@@ -168,7 +168,7 @@ def cgv_crawling(date, therater, shall):
             except Exception as e:
                 logger.debug("CGV {} {} ({})Message Exception : {}".format(therater, shall, sdate, e))
                 raise ValueError
-                
+
             # 결과를 찾았으니 다음날로 넘어간다
             sdate = datetime.strptime(sdate, "%Y%m%d")
             sdate += timedelta(days=1)
@@ -380,7 +380,7 @@ def lottecinema_crawling(date, brch, shall):
     filename = 'lottecinema' + brch + shall + '.pickle'
     shallcode = 0
     sdate = ""
-    
+
     try:
         shallcode = shall_dic[shall]
     except KeyError as e:
@@ -392,7 +392,7 @@ def lottecinema_crawling(date, brch, shall):
     except (EOFError, FileNotFoundError) as e:
         logger.debug('{}을 찾을 수 없어 {}(기본날짜)부터 검색을 시작합니다. : {}'.format(filename, date, e))
         sdate = date
-    
+
 
     logger.info('롯데시네마 검색 시작 날짜 : {}'.format(sdate))
     while True:
@@ -440,9 +440,24 @@ def lottecinema_crawling(date, brch, shall):
             time.sleep(60)
 
 
+def search_start(cinema, date, theater, shall):
+    if cinema == 'cgv':
+        thread = threading.Thread(target=cgv_crawling, args=(date, theater, shall,))
+        thread.start()
+        thread.join()
+    elif cinema == 'megabox':
+        thread = threading.Thread(target=megabox_crawling, args=(latest_date, theater, shall,))
+        thread.start()
+        thread.join()
+    elif cinema == 'lottecinema':
+        thread = threading.Thread(target=lottecinema_crawling, args=(latest_date, theater, shall,))
+        thread.start()
+        thread.join()
+
+
 if __name__ == "__main__":
     t = ['월', '화', '수', '목', '금', '토', '일']
-    latest_date = "20200901" #datetime.today().strftime("%Y%m%d")  # 프로그램을 실행시킨 시간부터 탐색
+    latest_date = "20211016" #datetime.today().strftime("%Y%m%d")  # 프로그램을 실행시킨 시간부터 탐색
     # 텔레그램 봇 연결 파트
     mytoken = ""
     mc = ""
@@ -467,16 +482,20 @@ if __name__ == "__main__":
     # 영화 리스트 불러오기
     # CGV : threading.Thread(target=cgv_crawling, args=(검색디폴트날짜, 지점, 상영관,))
     # MEGABOX : threading.Thread(target=megabox_crawling, args=(검색디폴트날짜, 지점, 상영관,))
-    cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '천호', 'IMAX',))
-    megabox = threading.Thread(target=megabox_crawling, args=(latest_date, '코엑스', 'DBC',))
-    lottecinema = threading.Thread(target=lottecinema_crawling, args=(latest_date, '월드타워', '수퍼플렉스G',))
+    search_start('cgv', latest_date, '용산', 'IMAX')
+    # search_start('megabox', latest_date, '코엑스', 'DBC')
+    # search_start('lottecinema', latest_date, '월드타워', '수퍼플렉스G')
 
-    cgv.start()
-    megabox.start()
-    lottecinema.start()
-
-    cgv.join()
-    megabox.join()
-    lottecinema.join()
+    # cgv = threading.Thread(target=cgv_crawling, args=(latest_date, '용산', 'IMAX',))
+    # megabox = threading.Thread(target=megabox_crawling, args=(latest_date, '코엑스', 'DBC',))
+    # lottecinema = threading.Thread(target=lottecinema_crawling, args=(latest_date, '월드타워', '수퍼플렉스G',))
+    #
+    # cgv.start()
+    # megabox.start()
+    # lottecinema.start()
+    #
+    # cgv.join()
+    # megabox.join()
+    # lottecinema.join()
 
     logger.info("Server Exit")
